@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -635,7 +635,7 @@
   <!-- Tela de Carregamento -->
   <div id="loader" class="loader-overlay">
     <div class="spinner"></div>
-    <div id="loaderText">Sincronizando dados com o Google Sheets...</div>
+    <div id="loaderText">A sincronizar dados com o Google Sheets...</div>
   </div>
 
   <!-- Cabeçalho Fixo com as 2 Listas Suspensas -->
@@ -644,7 +644,7 @@
       <div class="brand">
         <i class="fa-solid fa-file-word"></i>
         <div>
-          <h1>Gerador de Artefatos (Lei 14.133/2021)</h1>
+          <h1>Gerador de Artefactos (Lei 14.133/2021)</h1>
           <span>Montagem dinâmica integrada ao Google Sheets</span>
         </div>
       </div>
@@ -679,7 +679,7 @@
     <!-- Banner do Órgão Selecionado -->
     <section class="org-banner">
       <div class="org-banner-info">
-        <h2 id="bannerOrgaoNome">Carregando órgão...</h2>
+        <h2 id="bannerOrgaoNome">A carregar órgão...</h2>
         <p id="bannerOrgaoRodape">...</p>
       </div>
       <div class="doc-actions-top">
@@ -695,7 +695,7 @@
     <!-- Bloco de Data e Assinaturas -->
     <section class="signature-card">
       <div class="signature-header">
-        <h3><i class="fa-solid fa-signature"></i> Fechamento e Assinaturas</h3>
+        <h3><i class="fa-solid fa-signature"></i> Fecho e Assinaturas</h3>
         <button type="button" class="btn btn-primary" onclick="adicionarAssinante()">
           <i class="fa-solid fa-user-plus"></i> Adicionar Assinante
         </button>
@@ -706,7 +706,7 @@
         <input
           type="text"
           id="sigData"
-          placeholder="Ex: Fortaleza/CE, 23 de novembro de 2026. ou Fortaleza/CE, na data da assinatura digital."
+          placeholder="Ex.: Fortaleza/CE, 23 de novembro de 2026. ou Fortaleza/CE, na data da assinatura digital."
         />
       </div>
 
@@ -722,7 +722,7 @@
       </div>
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-success" onclick="gerarDocumentoWord()">
-          <i class="fa-solid fa-file-arrow-down"></i> Baixar Documento Word (.docx)
+          <i class="fa-solid fa-file-arrow-down"></i> Transferir Documento Word (.docx)
         </button>
       </div>
     </div>
@@ -771,7 +771,7 @@
     let savedSelectionRange = null;
 
     document.addEventListener("DOMContentLoaded", () => {
-      adicionarAssinante(); // Inicia com 1 bloco de assinatura em branco
+      adicionarAssinante();
       carregarDadosPlanilha();
 
       document.getElementById("selectOrgao").addEventListener("change", () => {
@@ -783,7 +783,7 @@
       });
     });
 
-    function mostrarLoader(visivel, texto = "Carregando...") {
+    function mostrarLoader(visivel, texto = "A carregar...") {
       const loader = document.getElementById("loader");
       document.getElementById("loaderText").textContent = texto;
       loader.style.display = visivel ? "flex" : "none";
@@ -803,7 +803,7 @@
     }
 
     async function carregarDadosPlanilha() {
-      mostrarLoader(true, "Sincronizando órgãos e tópicos com o Google Sheets...");
+      mostrarLoader(true, "A sincronizar órgãos e tópicos com o Google Sheets...");
       try {
         const [orgaosData, topicosData] = await Promise.all([
           fetchCSV(CSV_ORGAOS_URL),
@@ -819,7 +819,7 @@
         renderizarTopicos();
       } catch (err) {
         console.error("Erro ao carregar CSV:", err);
-        alert("Não foi possível carregar os dados da planilha. Verifique sua conexão ou se as abas continuam publicadas na web.");
+        alert("Não foi possível carregar os dados da planilha. Verifique a ligação ou se as abas continuam publicadas na web.");
       } finally {
         mostrarLoader(false);
       }
@@ -884,7 +884,7 @@
       if (filtrados.length === 0) {
         container.innerHTML = `
           <div class="org-banner" style="justify-content:center; text-align:center; border-left-color:#94a3b8;">
-            <p>Nenhum tópico cadastrado na planilha para <strong>${tipoDoc}</strong>. Clique em <strong>"+ Novo Tópico"</strong> para adicionar manualmente.</p>
+            <p>Nenhum tópico registado na planilha para <strong>${tipoDoc}</strong>. Clique em <strong>"+ Novo Tópico"</strong> para adicionar manualmente.</p>
           </div>`;
         atualizarNumeracaoEContador();
         return;
@@ -892,7 +892,6 @@
 
       filtrados.forEach((item) => {
         const marcado = (item.marcacao_padrao || "SIM").trim().toUpperCase() === "SIM";
-        // Campos de texto iniciam sempre em branco
         const card = criarCardTopico(item.titulo_topico.trim(), "<p><br></p>", marcado);
         container.appendChild(card);
       });
@@ -927,20 +926,20 @@
             <i class="fa-solid fa-font"></i>
             <input type="color" value="#000000" onchange="aplicarCor(this, 'foreColor')" />
           </label>
-          <label class="color-picker-wrap" title="Cor de Destaque (Marca-texto)">
+          <label class="color-picker-wrap" title="Cor de Destaque">
             <i class="fa-solid fa-highlighter"></i>
             <input type="color" value="#fef08a" onchange="aplicarCor(this, 'hiliteColor')" />
           </label>
           <div class="tb-sep"></div>
-          <button type="button" class="tb-btn subtopico-btn" onclick="inserirSubtopico(this, 1)" title="Inserir subtópico (ex: 2.1)">
+          <button type="button" class="tb-btn subtopico-btn" onclick="inserirSubtopico(this, 1)" title="Inserir subtópico (ex.: 2.1)">
             <i class="fa-solid fa-indent"></i> + Subtópico
           </button>
-          <button type="button" class="tb-btn subtopico-btn" onclick="aprofundarSubtopico(this)" title="Subdividir o subtópico atual (ex: 2.1 -> 2.1.1)">
+          <button type="button" class="tb-btn subtopico-btn" onclick="aprofundarSubtopico(this)" title="Subdividir o subtópico atual (ex.: 2.1 -> 2.1.1)">
             <i class="fa-solid fa-level-down-alt"></i> Subdividir (X.Y.Z)
           </button>
           <div class="tb-sep"></div>
           <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyLeft')" title="Alinhar à esquerda"><i class="fa-solid fa-align-left"></i></button>
-          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyCenter')" title="Centralizar"><i class="fa-solid fa-align-center"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyCenter')" title="Centrar"><i class="fa-solid fa-align-center"></i></button>
           <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyFull')" title="Justificar"><i class="fa-solid fa-align-justify"></i></button>
           <div class="tb-sep"></div>
           <button type="button" class="tb-btn" onclick="abrirModalTabela(this)" title="Inserir Tabela"><i class="fa-solid fa-table"></i> + Tabela</button>
@@ -964,7 +963,6 @@
       });
       editor.addEventListener("keyup", (e) => {
         salvarSelecao();
-        // Permite digitar "2.1 " ou "2.1.1 " no início de uma linha e converter automaticamente em subtópico oficial
         if (e.key === " " || e.code === "Space") {
           verificarAtalhoNumeracaoManual(editor, card);
         }
@@ -1000,7 +998,6 @@
         return;
       }
 
-      // Pilha de contadores por nível de profundidade (nível 1 => 2.1, nível 2 => 2.1.1, nível 3 => 2.1.1.1)
       const counters = [];
 
       subParas.forEach(p => {
@@ -1048,7 +1045,7 @@
       const card = btn.closest(".topic-card");
       const topNum = getNumeroTopicoDoCard(card);
       if (!topNum) {
-        alert("Marque o tópico para que ele tenha numeração antes de adicionar subtópicos.");
+        alert("Selecione o tópico para que ele tenha numeração antes de adicionar subtópicos.");
         return;
       }
 
@@ -1070,7 +1067,6 @@
 
       recalcularSubtopicosDoCard(card);
 
-      // Posiciona cursor após o número do subtópico
       const range = document.createRange();
       const lastChild = novoP.lastChild;
       range.setStart(lastChild, lastChild.nodeType === Node.TEXT_NODE ? lastChild.length : 0);
@@ -1123,7 +1119,6 @@
       if (!node || node === editor || node.classList.contains("subtopico-linha")) return;
 
       const texto = node.textContent.trim();
-      // Detecta padrões como "2.1" ou "2.1.1" ou "2.1.1.1"
       const match = texto.match(/^(\d+(?:\.\d+)+)\.?$/);
       if (match) {
         const partes = match[1].split(".");
@@ -1210,11 +1205,11 @@
         </div>
         <div class="field-box">
           <label>Cargo / Função / Setor</label>
-          <input type="text" class="signer-cargo" placeholder="Ex: Gerente / Fiscal / Ordenador de Despesa" />
+          <input type="text" class="signer-cargo" placeholder="Ex.: Gerente / Fiscal / Ordenador de Despesa" />
         </div>
         <div class="field-box">
           <label>Observação / Tipo de Assinatura</label>
-          <input type="text" class="signer-obs" placeholder="Ex: -Assinatura por Certificado Digital-" />
+          <input type="text" class="signer-obs" placeholder="Ex.: -Assinatura por Certificado Digital-" />
         </div>
         <button type="button" class="btn btn-danger-outline" onclick="removerAssinante(this)" title="Remover assinante">
           <i class="fa-solid fa-trash"></i>
@@ -1387,7 +1382,7 @@
       if (node.nodeType !== Node.ELEMENT_NODE) return runs;
 
       if (node.classList && node.classList.contains("sub-num")) {
-        return runs; // O código do subtópico é tratado estruturalmente no parágrafo
+        return runs;
       }
 
       const tag = node.tagName.toUpperCase();
@@ -1507,7 +1502,7 @@
           }
 
           const runs = extrairTextRuns(node);
-          const textoConteudo = runs.map(r => r.root ? r.root.find(x => x._attrs && x._attrs.text)?. _attrs.text || "" : "").join("").trim();
+          const textoConteudo = runs.map(r => r.root ? r.root.find(x => x._attrs && x._attrs.text)?._attrs.text || "" : "").join("").trim();
           const isSubtopico = node.classList && node.classList.contains("subtopico-linha");
 
           if (!textoConteudo && !isSubtopico) return;
@@ -1545,9 +1540,9 @@
     }
 
     async function carregarImagemBuffer(url) {
-      if (!url) return null;
+      if (!url || !url.trim()) return null;
       try {
-        const resp = await fetch(url);
+        const resp = await fetch(url.trim());
         if (!resp.ok) return null;
         return await resp.arrayBuffer();
       } catch (e) {
@@ -1556,7 +1551,7 @@
     }
 
     // =========================================================================
-    // GERAÇÃO DO ARQUIVO WORD (.DOCX)
+    // GERAÇÃO DO ARQUIVO WORD (.DOCX) COM IMAGEM DE TOPO E TARJA INFERIOR
     // =========================================================================
     async function gerarDocumentoWord() {
       const cardsSelecionados = Array.from(document.querySelectorAll(".topic-card"))
@@ -1567,7 +1562,7 @@
         return;
       }
 
-      mostrarLoader(true, "Gerando arquivo Word (.docx) formatado...");
+      mostrarLoader(true, "A gerar ficheiro Word (.docx) formatado...");
 
       try {
         const {
@@ -1579,59 +1574,46 @@
         const tipoDoc = document.getElementById("selectTipoDoc").value;
         const tituloPrincipal = TITULOS_DOCUMENTO[tipoDoc] || tipoDoc.toUpperCase();
 
-        const [logoEsqBuf, logoDirBuf] = await Promise.all([
-          carregarImagemBuffer(org.url_logo_esquerda),
-          carregarImagemBuffer(org.url_logo_direita)
+        // Carrega imagem do topo e tarja colorida da parte inferior a partir da aba Orgaos
+        const [topoBuf, tarjaBuf] = await Promise.all([
+          carregarImagemBuffer(org.url_imagem_topo || org.url_logo_esquerda),
+          carregarImagemBuffer(org.url_tarja_rodape)
         ]);
 
+        // Cabeçalho superior (imagem no topo da página)
         const headerChildren = [];
-        if (logoEsqBuf || logoDirBuf) {
-          const runsLogos = [];
-          if (logoEsqBuf) {
-            runsLogos.push(new ImageRun({ data: logoEsqBuf, transformation: { width: 120, height: 42 } }));
-            runsLogos.push(new TextRun({ text: "      " }));
-          }
-          if (logoDirBuf) {
-            runsLogos.push(new ImageRun({ data: logoDirBuf, transformation: { width: 155, height: 42 } }));
-          }
+        if (topoBuf) {
           headerChildren.push(new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { after: 120 },
-            children: runsLogos
-          }));
-        } else {
-          headerChildren.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 100 },
             children: [
-              new TextRun({
-                text: (org.nome_sigla || "PREFEITURA MUNICIPAL DE FORTALEZA").toUpperCase(),
-                bold: true,
-                font: "Calibri",
-                size: 20,
-                color: "1F3A52"
+              new ImageRun({
+                data: topoBuf,
+                transformation: { width: 340, height: 42 }
               })
             ]
           }));
         }
 
+        // Rodapé inferior (informações institucionais + tarja colorida na base)
         const rodapeTexto = org.endereco_rodape || "";
         const partesRodape = rodapeTexto.split("|").map(p => p.trim());
-        const footerParagraphs = [
-          new Paragraph({
-            spacing: { before: 80, after: 40 },
-            border: { top: { style: BorderStyle.SINGLE, size: 6, color: "CBD5E1" } },
+        const footerParagraphs = [];
+
+        if (org.nome_sigla) {
+          footerParagraphs.push(new Paragraph({
+            spacing: { before: 60, after: 20 },
             children: [
               new TextRun({
-                text: org.nome_sigla ? org.nome_sigla.split("-").slice(1).join("-").trim() || org.nome_sigla : "",
+                text: org.nome_sigla,
                 bold: true,
                 font: "Calibri",
                 size: 18,
                 color: "1E293B"
               })
             ]
-          })
-        ];
+          }));
+        }
 
         partesRodape.forEach(linha => {
           if (linha) {
@@ -1641,6 +1623,19 @@
             }));
           }
         });
+
+        if (tarjaBuf) {
+          footerParagraphs.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 80, after: 0 },
+            children: [
+              new ImageRun({
+                data: tarjaBuf,
+                transformation: { width: 595, height: 18 }
+              })
+            ]
+          }));
+        }
 
         const docChildren = [];
 
@@ -1777,7 +1772,7 @@
         saveAs(blob, `${tipoLimpo}_${siglaLimpa}.docx`);
       } catch (err) {
         console.error("Erro ao gerar Word:", err);
-        alert("Ocorreu um erro ao gerar o arquivo Word: " + err.message);
+        alert("Ocorreu um erro ao gerar o ficheiro Word: " + err.message);
       } finally {
         mostrarLoader(false);
       }
