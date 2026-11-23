@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Gerador de Documentos - Lei 14.133/2021</title>
+
+  <!-- Fontes e Ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- PapaParse para leitura segura de CSV do Google Sheets -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- docx.js para geração de arquivo .docx nativo no navegador -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+
+  <!-- FileSaver.js para download do arquivo -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1f3a52;
+      --primary-hover: #15293b;
+      --accent: #e66c2c;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+
+    /* Barra Superior Fixa */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .topbar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand i {
+      font-size: 1.4rem;
+      color: #fb923c;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      font-weight: 400;
+    }
+
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .select-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 220px;
+    }
+
+    .select-group label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #cbd5e1;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .select-group select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: #fff;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-sync {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+
+    .btn-sync:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Container Principal */
+    .container {
+      max-width: 1120px;
+      margin: 22px auto;
+      padding: 0 16px;
+    }
+
+    /* Banner de Status / Info Institucional */
+    .org-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .org-banner-info h2 {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .org-banner-info p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .doc-actions-top {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+
+    .btn-success:hover {
+      background: #15803d;
+    }
+
+    /* Cartão de Tópico */
+    .topic-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: opacity 0.2s, border-color 0.2s;
+      overflow: hidden;
+    }
+
+    .topic-card.unchecked {
+      opacity: 0.58;
+      border-style: dashed;
+    }
+
+    .topic-header {
+      background: #e2e8f0;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topic-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .topic-checkbox {
+      width: 19px;
+      height: 19px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .topic-number-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .topic-card.unchecked .topic-number-badge {
+      background: #94a3b8;
+    }
+
+    .topic-title-input {
+      flex: 1;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      padding: 4px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .topic-title-input:hover,
+    .topic-title-input:focus {
+      background: #fff;
+      border-color: var(--border);
+      outline: none;
+    }
+
+    .topic-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255,255,255,0.7);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .icon-btn.delete:hover {
+      color: var(--danger);
+    }
+
+    /* Barra de Ferramentas do Editor Rico */
+    .editor-toolbar {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .topic-card.unchecked .editor-toolbar,
+    .topic-card.unchecked .editor-area {
+      pointer-events: none;
+    }
+
+    .tb-btn {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+    }
+
+    .tb-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .tb-sep {
+      width: 1px;
+      height: 20px;
+      background: #cbd5e1;
+      margin: 0 4px;
+    }
+
+    .color-picker-wrap {
+      display: inline-flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 0 6px;
+      height: 28px;
+      gap: 4px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .color-picker-wrap input[type="color"] {
+      border: none;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    /* Área Editável */
+    .editor-area {
+      padding: 14px 16px;
+      min-height: 90px;
+      outline: none;
+      font-size: 0.94rem;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .editor-area p {
+      margin: 0 0 8px 0;
+    }
+
+    .editor-area ul, .editor-area ol {
+      margin: 6px 0 10px 22px;
+      padding: 0;
+    }
+
+    .editor-area table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.86rem;
+    }
+
+    .editor-area th,
+    .editor-area td {
+      border: 1px solid #475569;
+      padding: 6px 8px;
+      text-align: left;
+      min-width: 50px;
+    }
+
+    .editor-area th {
+      background-color: #e2e8f0;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Bloco de Assinatura */
+    .signature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-top: 22px;
+    }
+
+    .signature-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 0.95rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sig-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .field-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-box label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .field-box input {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.88rem;
+    }
+
+    /* Barra Flutuante Inferior de Exportação */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 10px 20px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+      z-index: 99;
+    }
+
+    .bottom-bar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .summary-counter {
+      font-size: 0.86rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .summary-counter strong {
+      color: var(--primary);
+    }
+
+    /* Loader */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      gap: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 4px solid #cbd5e1;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Modal simples para inserir tabela */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-box h4 {
+      margin: 0 0 14px 0;
+      color: var(--primary);
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de Carregamento -->
+  <div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+    <div id="loaderText">Sincronizando dados com o Google Sheets...</div>
+  </div>
+
+  <!-- Cabeçalho Fixo com as 2 Listas Suspensas -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <i class="fa-solid fa-file-word"></i>
+        <div>
+          <h1>Gerador de Artefatos (Lei 14.133/2021)</h1>
+          <span>Montagem dinâmica integrada ao Google Sheets</span>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="select-group">
+          <label for="selectOrgao"><i class="fa-solid fa-building-columns"></i> Órgão / Unidade</label>
+          <select id="selectOrgao"></select>
+        </div>
+
+        <div class="select-group">
+          <label for="selectTipoDoc"><i class="fa-solid fa-file-lines"></i> Tipo de Documento</label>
+          <select id="selectTipoDoc">
+            <option value="DFD do PCA">DFD do PCA</option>
+            <option value="DFD do PLS">DFD do PLS</option>
+            <option value="DFD Geral">DFD Geral</option>
+            <option value="ETP">ETP</option>
+            <option value="TR" selected>TR (Termo de Referência)</option>
+            <option value="Análise de Riscos">Análise de Riscos</option>
+          </select>
+        </div>
+
+        <button class="btn-sync" onclick="carregarDadosPlanilha()" title="Recarregar dados da planilha">
+          <i class="fa-solid fa-rotate"></i> Atualizar Planilha
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="container">
+    <!-- Banner do Órgão Selecionado -->
+    <section class="org-banner">
+      <div class="org-banner-info">
+        <h2 id="bannerOrgaoNome">Carregando órgão...</h2>
+        <p id="bannerOrgaoRodape">...</p>
+      </div>
+      <div class="doc-actions-top">
+        <button class="btn" onclick="marcarTodos(true)"><i class="fa-regular fa-square-check"></i> Marcar Todos</button>
+        <button class="btn" onclick="marcarTodos(false)"><i class="fa-regular fa-square"></i> Desmarcar Todos</button>
+        <button class="btn btn-primary" onclick="adicionarTopicoPersonalizado()"><i class="fa-solid fa-plus"></i> Novo Tópico</button>
+      </div>
+    </section>
+
+    <!-- Lista de Tópicos Dinâmicos -->
+    <div id="topicsContainer"></div>
+
+    <!-- Bloco de Data e Assinatura -->
+    <section class="signature-card">
+      <h3><i class="fa-solid fa-signature"></i> Fechamento e Assinatura do Documento</h3>
+      <div class="sig-grid">
+        <div class="field-box">
+          <label for="sigData">Texto de Data</label>
+          <input type="text" id="sigData" value="Data, conforme assinatura digital." />
+        </div>
+        <div class="field-box">
+          <label for="sigNome">Nome do Responsável</label>
+          <input type="text" id="sigNome" placeholder="Ex: Domitília Fernandes de Araújo Leite" />
+        </div>
+        <div class="field-box">
+          <label for="sigCargo">Cargo / Setor</label>
+          <input type="text" id="sigCargo" placeholder="Ex: GERENTE DE ENGENHARIA" />
+        </div>
+        <div class="field-box">
+          <label for="sigObs">Observação da Assinatura</label>
+          <input type="text" id="sigObs" value="-Assinatura por Certificado Digital-" />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Barra Inferior Fixa -->
+  <footer class="bottom-bar">
+    <div class="bottom-bar-inner">
+      <div class="summary-counter" id="summaryCounter">
+        <strong>0</strong> tópicos selecionados para o documento
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-success" onclick="gerarDocumentoWord()">
+          <i class="fa-solid fa-file-arrow-down"></i> Baixar Documento Word (.docx)
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal para Criar Tabela -->
+  <div id="tableModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h4><i class="fa-solid fa-table"></i> Inserir Nova Tabela</h4>
+      <div class="modal-row">
+        <div class="field-box" style="flex:1;">
+          <label for="tblRows">Linhas (com cabeçalho)</label>
+          <input type="number" id="tblRows" min="2" max="50" value="3" />
+        </div>
+        <div class="field-box" style="flex:1;">
+          <label for="tblCols">Colunas</label>
+          <input type="number" id="tblCols" min="1" max="15" value="4" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="fecharModalTabela()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarInsercaoTabela()">Inserir Tabela</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // LINKS CSV PUBLICADOS DO GOOGLE SHEETS
+    // =========================================================================
+    const CSV_ORGAOS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXr_2j4SjbwSOVR-W5CQWF9tG0FVgoAr35Cgbr1xu9lp5UFg9b7Nyg-bA9fMM9bCkn-B6KdKUbfvjN/pub?gid=0&single=true&output=csv";
+    const CSV_TOPICOS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXr_2j4SjbwSOVR-W5CQWF9tG0FVgoAr35Cgbr1xu9lp5UFg9b7Nyg-bA9fMM9bCkn-B6KdKUbfvjN/pub?gid=1162435086&single=true&output=csv";
+
+    // Mapeamento dos títulos completos para o cabeçalho do Word
+    const TITULOS_DOCUMENTO = {
+      "DFD do PCA": "DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA – DFD (PCA)",
+      "DFD do PLS": "DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA – DFD (PLS)",
+      "DFD Geral": "DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA – DFD",
+      "ETP": "ESTUDO TÉCNICO PRELIMINAR – ETP",
+      "TR": "TERMO DE REFERÊNCIA",
+      "Análise de Riscos": "MAPA DE GERENCIAMENTO E ANÁLISE DE RISCOS"
+    };
+
+    let listaOrgaos = [];
+    let listaTopicos = [];
+    let activeEditorElement = null;
+    let savedSelectionRange = null;
+
+    // Inicialização
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarDadosPlanilha();
+
+      document.getElementById("selectOrgao").addEventListener("change", () => {
+        atualizarBannerOrgao();
+        atualizarUnidadeRequisitanteNoEditor();
+      });
+
+      document.getElementById("selectTipoDoc").addEventListener("change", () => {
+        renderizarTopicos();
+      });
+    });
+
+    function mostrarLoader(visivel, texto = "Carregando...") {
+      const loader = document.getElementById("loader");
+      document.getElementById("loaderText").textContent = texto;
+      loader.style.display = visivel ? "flex" : "none";
+    }
+
+    function fetchCSV(url) {
+      return new Promise((resolve, reject) => {
+        const cacheBuster = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+        Papa.parse(cacheBuster, {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => resolve(results.data),
+          error: (err) => reject(err)
+        });
+      });
+    }
+
+    async function carregarDadosPlanilha() {
+      mostrarLoader(true, "Sincronizando órgãos e tópicos com o Google Sheets...");
+      try {
+        const [orgaosData, topicosData] = await Promise.all([
+          fetchCSV(CSV_ORGAOS_URL),
+          fetchCSV(CSV_TOPICOS_URL)
+        ]);
+
+        listaOrgaos = orgaosData.filter(o => o.id_orgao && o.nome_sigla);
+        listaTopicos = topicosData.filter(t => t.tipo_documento && t.titulo_topico);
+
+        popularSelectOrgaos();
+        popularSelectTiposDoc();
+        atualizarBannerOrgao();
+        renderizarTopicos();
+      } catch (err) {
+        console.error("Erro ao carregar CSV:", err);
+        alert("Não foi possível carregar os dados da planilha. Verifique sua conexão ou se as abas continuam publicadas na web.");
+      } finally {
+        mostrarLoader(false);
+      }
+    }
+
+    function popularSelectOrgaos() {
+      const sel = document.getElementById("selectOrgao");
+      const valorAtual = sel.value;
+      sel.innerHTML = "";
+
+      listaOrgaos.forEach(org => {
+        const opt = document.createElement("option");
+        opt.value = org.id_orgao.trim();
+        opt.textContent = org.nome_sigla.trim();
+        sel.appendChild(opt);
+      });
+
+      if (valorAtual && listaOrgaos.some(o => o.id_orgao.trim() === valorAtual)) {
+        sel.value = valorAtual;
+      }
+    }
+
+    function popularSelectTiposDoc() {
+      const sel = document.getElementById("selectTipoDoc");
+      const valorAtual = sel.value;
+      const tiposPlanilha = [...new Set(listaTopicos.map(t => t.tipo_documento.trim()))];
+
+      // Garante que as 6 opções solicitadas existam + quaisquer novas cadastradas na planilha
+      const opcoesPadrao = ["DFD do PCA", "DFD do PLS", "DFD Geral", "ETP", "TR", "Análise de Riscos"];
+      const todasOpcoes = [...new Set([...opcoesPadrao, ...tiposPlanilha])];
+
+      sel.innerHTML = "";
+      todasOpcoes.forEach(tipo => {
+        const opt = document.createElement("option");
+        opt.value = tipo;
+        opt.textContent = tipo === "TR" ? "TR (Termo de Referência)" : tipo;
+        sel.appendChild(opt);
+      });
+
+      sel.value = todasOpcoes.includes(valorAtual) ? valorAtual : "TR";
+    }
+
+    function getOrgaoAtual() {
+      const id = document.getElementById("selectOrgao").value;
+      return listaOrgaos.find(o => o.id_orgao.trim() === id) || listaOrgaos[0] || {};
+    }
+
+    function atualizarBannerOrgao() {
+      const org = getOrgaoAtual();
+      document.getElementById("bannerOrgaoNome").textContent = org.nome_sigla || "Órgão não selecionado";
+      document.getElementById("bannerOrgaoRodape").textContent = org.endereco_rodape || "";
+    }
+
+    function atualizarUnidadeRequisitanteNoEditor() {
+      const org = getOrgaoAtual();
+      if (!org.unidade_requisitante_padrao) return;
+
+      const cards = document.querySelectorAll(".topic-card");
+      cards.forEach(card => {
+        const titulo = card.querySelector(".topic-title-input").value.trim().toUpperCase();
+        if (titulo.includes("UNIDADE REQUISITANTE")) {
+          const editor = card.querySelector(".editor-area");
+          editor.innerHTML = `<p>${org.unidade_requisitante_padrao}</p>`;
+        }
+      });
+    }
+
+    function renderizarTopicos() {
+      const tipoDoc = document.getElementById("selectTipoDoc").value;
+      const container = document.getElementById("topicsContainer");
+      container.innerHTML = "";
+
+      const filtrados = listaTopicos
+        .filter(t => t.tipo_documento.trim().toLowerCase() === tipoDoc.toLowerCase())
+        .sort((a, b) => (parseInt(a.ordem) || 999) - (parseInt(b.ordem) || 999));
+
+      if (filtrados.length === 0) {
+        container.innerHTML = `
+          <div class="org-banner" style="justify-content:center; text-align:center; border-left-color:#94a3b8;">
+            <p>Nenhum tópico cadastrado na planilha para <strong>${tipoDoc}</strong>. Clique em <strong>"+ Novo Tópico"</strong> para adicionar manualmente.</p>
+          </div>`;
+        atualizarNumeracaoEContador();
+        return;
+      }
+
+      const org = getOrgaoAtual();
+
+      filtrados.forEach((item) => {
+        const marcado = (item.marcacao_padrao || "SIM").trim().toUpperCase() === "SIM";
+        let conteudo = item.conteudo_padrao || "<p></p>";
+
+        // Substitui automaticamente o texto da Unidade Requisitante conforme o órgão escolhido
+        if (item.titulo_topico.trim().toUpperCase().includes("UNIDADE REQUISITANTE") && org.unidade_requisitante_padrao) {
+          conteudo = `<p>${org.unidade_requisitante_padrao}</p>`;
+        }
+
+        const card = criarCardTopico(item.titulo_topico.trim(), conteudo, marcado);
+        container.appendChild(card);
+      });
+
+      atualizarNumeracaoEContador();
+    }
+
+    function criarCardTopico(titulo, conteudoHtml, marcado = true) {
+      const card = document.createElement("div");
+      card.className = "topic-card" + (marcado ? "" : " unchecked");
+
+      card.innerHTML = `
+        <div class="topic-header">
+          <div class="topic-title-wrap">
+            <input type="checkbox" class="topic-checkbox" ${marcado ? "checked" : ""} title="Incluir ou excluir este tópico do documento" />
+            <span class="topic-number-badge">1</span>
+            <input type="text" class="topic-title-input" value="${escapeHtmlAttr(titulo)}" />
+          </div>
+          <div class="topic-card-actions">
+            <button type="button" class="icon-btn" onclick="moverTopico(this, -1)" title="Mover para cima"><i class="fa-solid fa-arrow-up"></i></button>
+            <button type="button" class="icon-btn" onclick="moverTopico(this, 1)" title="Mover para baixo"><i class="fa-solid fa-arrow-down"></i></button>
+            <button type="button" class="icon-btn delete" onclick="removerTopico(this)" title="Remover tópico"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+
+        <div class="editor-toolbar">
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'bold')" title="Negrito"><i class="fa-solid fa-bold"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'italic')" title="Itálico"><i class="fa-solid fa-italic"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'underline')" title="Sublinhado"><i class="fa-solid fa-underline"></i></button>
+          <div class="tb-sep"></div>
+          <label class="color-picker-wrap" title="Cor do Texto">
+            <i class="fa-solid fa-font"></i>
+            <input type="color" value="#000000" onchange="aplicarCor(this, 'foreColor')" />
+          </label>
+          <label class="color-picker-wrap" title="Cor de Destaque (Marca-texto)">
+            <i class="fa-solid fa-highlighter"></i>
+            <input type="color" value="#fef08a" onchange="aplicarCor(this, 'hiliteColor')" />
+          </label>
+          <div class="tb-sep"></div>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'insertUnorderedList')" title="Lista com marcadores"><i class="fa-solid fa-list-ul"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'insertOrderedList')" title="Lista numerada"><i class="fa-solid fa-list-ol"></i></button>
+          <div class="tb-sep"></div>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyLeft')" title="Alinhar à esquerda"><i class="fa-solid fa-align-left"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyCenter')" title="Centralizar"><i class="fa-solid fa-align-center"></i></button>
+          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyFull')" title="Justificar"><i class="fa-solid fa-align-justify"></i></button>
+          <div class="tb-sep"></div>
+          <button type="button" class="tb-btn" onclick="abrirModalTabela(this)" title="Inserir Tabela"><i class="fa-solid fa-table"></i> + Tabela</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addRow')" title="Adicionar linha na tabela selecionada"><i class="fa-solid fa-plus"></i> Linha</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addCol')" title="Adicionar coluna na tabela selecionada"><i class="fa-solid fa-plus"></i> Coluna</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'delRow')" title="Remover linha atual da tabela"><i class="fa-solid fa-minus"></i> Linha</button>
+        </div>
+
+        <div class="editor-area" contenteditable="true">${conteudoHtml}</div>
+      `;
+
+      const checkbox = card.querySelector(".topic-checkbox");
+      checkbox.addEventListener("change", () => {
+        card.classList.toggle("unchecked", !checkbox.checked);
+        atualizarNumeracaoEContador();
+      });
+
+      const editor = card.querySelector(".editor-area");
+      editor.addEventListener("focus", () => {
+        activeEditorElement = editor;
+      });
+      editor.addEventListener("keyup", salvarSelecao);
+      editor.addEventListener("mouseup", salvarSelecao);
+
+      return card;
+    }
+
+    function escapeHtmlAttr(str) {
+      return String(str).replace(/"/g, "&quot;");
+    }
+
+    function atualizarNumeracaoEContador() {
+      const cards = document.querySelectorAll(".topic-card");
+      let contadorAtivos = 0;
+
+      cards.forEach(card => {
+        const checked = card.querySelector(".topic-checkbox").checked;
+        const badge = card.querySelector(".topic-number-badge");
+        if (checked) {
+          contadorAtivos++;
+          badge.textContent = contadorAtivos;
+        } else {
+          badge.textContent = "—";
+        }
+      });
+
+      document.getElementById("summaryCounter").innerHTML =
+        `<strong>${contadorAtivos}</strong> de ${cards.length} tópicos selecionados para o documento`;
+    }
+
+    function marcarTodos(estado) {
+      document.querySelectorAll(".topic-card").forEach(card => {
+        const cb = card.querySelector(".topic-checkbox");
+        cb.checked = estado;
+        card.classList.toggle("unchecked", !estado);
+      });
+      atualizarNumeracaoEContador();
+    }
+
+    function adicionarTopicoPersonalizado() {
+      const container = document.getElementById("topicsContainer");
+      const card = criarCardTopico("NOVO TÓPICO PERSONALIZADO", "<p>Digite aqui o conteúdo deste tópico...</p>", true);
+      container.appendChild(card);
+      atualizarNumeracaoEContador();
+      card.querySelector(".topic-title-input").focus();
+      card.querySelector(".topic-title-input").select();
+    }
+
+    function moverTopico(btn, direcao) {
+      const card = btn.closest(".topic-card");
+      const container = card.parentElement;
+      if (direcao === -1 && card.previousElementSibling) {
+        container.insertBefore(card, card.previousElementSibling);
+      } else if (direcao === 1 && card.nextElementSibling) {
+        container.insertBefore(card.nextElementSibling, card);
+      }
+      atualizarNumeracaoEContador();
+    }
+
+    function removerTopico(btn) {
+      const card = btn.closest(".topic-card");
+      card.remove();
+      atualizarNumeracaoEContador();
+    }
+
+    // =========================================================================
+    // COMANDOS DO EDITOR RICO E TABELAS
+    // =========================================================================
+    function execCmd(event, comando, valor = null) {
+      event.preventDefault();
+      const card = event.target.closest(".topic-card");
+      const editor = card.querySelector(".editor-area");
+      editor.focus();
+      document.execCommand(comando, false, valor);
+    }
+
+    function aplicarCor(inputEl, comando) {
+      const card = inputEl.closest(".topic-card");
+      const editor = card.querySelector(".editor-area");
+      editor.focus();
+      document.execCommand(comando, false, inputEl.value);
+    }
+
+    function salvarSelecao() {
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        savedSelectionRange = sel.getRangeAt(0);
+      }
+    }
+
+    function abrirModalTabela(btn) {
+      const card = btn.closest(".topic-card");
+      activeEditorElement = card.querySelector(".editor-area");
+      salvarSelecao();
+      document.getElementById("tableModal").style.display = "flex";
+    }
+
+    function fecharModalTabela() {
+      document.getElementById("tableModal").style.display = "none";
+    }
+
+    function confirmarInsercaoTabela() {
+      const rows = Math.max(2, parseInt(document.getElementById("tblRows").value) || 3);
+      const cols = Math.max(1, parseInt(document.getElementById("tblCols").value) || 3);
+
+      let html = "<table><thead><tr>";
+      for (let c = 0; c < cols; c++) {
+        html += `<th>Coluna ${c + 1}</th>`;
+      }
+      html += "</tr></thead><tbody>";
+
+      for (let r = 1; r < rows; r++) {
+        html += "<tr>";
+        for (let c = 0; c < cols; c++) {
+          html += "<td>&nbsp;</td>";
+        }
+        html += "</tr>";
+      }
+      html += "</tbody></table><p><br></p>";
+
+      if (activeEditorElement) {
+        activeEditorElement.focus();
+        if (savedSelectionRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(savedSelectionRange);
+        }
+        document.execCommand("insertHTML", false, html);
+      }
+      fecharModalTabela();
+    }
+
+    function manipularTabela(btn, acao) {
+      const card = btn.closest(".topic-card");
+      const editor = card.querySelector(".editor-area");
+      const sel = window.getSelection();
+      let node = sel.anchorNode;
+
+      while (node && node !== editor && node.nodeName !== "TD" && node.nodeName !== "TH") {
+        node = node.parentNode;
+      }
+
+      let table = node ? node.closest("table") : editor.querySelector("table:last-of-type");
+      if (!table) {
+        alert("Clique dentro de uma tabela para adicionar ou remover linhas/colunas.");
+        return;
+      }
+
+      if (acao === "addRow") {
+        const refRow = (node && node.closest("tr")) || table.rows[table.rows.length - 1];
+        const colCount = refRow.cells.length;
+        const newRow = table.insertRow(refRow.rowIndex + 1);
+        for (let i = 0; i < colCount; i++) {
+          const cell = newRow.insertCell(i);
+          cell.innerHTML = "&nbsp;";
+        }
+      } else if (acao === "addCol") {
+        for (let r = 0; r < table.rows.length; r++) {
+          const isHeader = table.rows[r].parentNode.nodeName === "THEAD";
+          if (isHeader) {
+            const th = document.createElement("th");
+            th.textContent = "Nova Coluna";
+            table.rows[r].appendChild(th);
+          } else {
+            const td = table.rows[r].insertCell(-1);
+            td.innerHTML = "&nbsp;";
+          }
+        }
+      } else if (acao === "delRow") {
+        const refRow = node && node.closest("tr");
+        if (refRow && table.rows.length > 1) {
+          table.deleteRow(refRow.rowIndex);
+        }
+      }
+    }
+
+    // =========================================================================
+    // CONVERSÃO DE HTML DO EDITOR PARA ELEMENTOS NATIVOS DO DOCX.JS
+    // =========================================================================
+    function rgbToHex(colorStr) {
+      if (!colorStr) return undefined;
+      colorStr = colorStr.trim();
+      if (colorStr.startsWith("#")) {
+        const hex = colorStr.replace("#", "");
+        return hex.length === 3 ? hex.split("").map(x => x + x).join("") : hex;
+      }
+      const match = colorStr.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (match) {
+        const r = parseInt(match[1]).toString(16).padStart(2, "0");
+        const g = parseInt(match[2]).toString(16).padStart(2, "0");
+        const b = parseInt(match[3]).toString(16).padStart(2, "0");
+        return `${r}${g}${b}`;
+      }
+      return undefined;
+    }
+
+    function extrairTextRuns(node, estiloAtual = {}) {
+      const { TextRun } = window.docx;
+      let runs = [];
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        const texto = node.textContent;
+        if (texto) {
+          runs.push(new TextRun({
+            text: texto,
+            font: "Calibri",
+            size: 22, // 11pt
+            bold: !!estiloAtual.bold,
+            italics: !!estiloAtual.italic,
+            underline: estiloAtual.underline ? {} : undefined,
+            color: estiloAtual.color || "000000",
+            shading: estiloAtual.highlight ? { fill: estiloAtual.highlight } : undefined
+          }));
+        }
+        return runs;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) return runs;
+
+      const tag = node.tagName.toUpperCase();
+      if (tag === "BR") {
+        runs.push(new TextRun({ break: 1 }));
+        return runs;
+      }
+
+      const novoEstilo = { ...estiloAtual };
+      if (tag === "B" || tag === "STRONG") novoEstilo.bold = true;
+      if (tag === "I" || tag === "EM") novoEstilo.italic = true;
+      if (tag === "U") novoEstilo.underline = true;
+
+      if (node.style) {
+        if (node.style.fontWeight === "bold" || parseInt(node.style.fontWeight) >= 600) novoEstilo.bold = true;
+        if (node.style.fontStyle === "italic") novoEstilo.italic = true;
+        if (node.style.textDecoration && node.style.textDecoration.includes("underline")) novoEstilo.underline = true;
+        if (node.style.color) novoEstilo.color = rgbToHex(node.style.color);
+        if (node.style.backgroundColor && node.style.backgroundColor !== "transparent") {
+          novoEstilo.highlight = rgbToHex(node.style.backgroundColor);
+        }
+      }
+      if (tag === "FONT" && node.getAttribute("color")) {
+        novoEstilo.color = rgbToHex(node.getAttribute("color"));
+      }
+
+      node.childNodes.forEach(child => {
+        runs = runs.concat(extrairTextRuns(child, novoEstilo));
+      });
+
+      return runs;
+    }
+
+    function mapearAlinhamento(el) {
+      const { AlignmentType } = window.docx;
+      const align = el.style ? el.style.textAlign : "";
+      if (align === "center") return AlignmentType.CENTER;
+      if (align === "right") return AlignmentType.RIGHT;
+      if (align === "left") return AlignmentType.LEFT;
+      return AlignmentType.JUSTIFIED;
+    }
+
+    function converterHtmlParaDocxBlocks(htmlString, numeroTopico) {
+      const { Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, AlignmentType } = window.docx;
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = htmlString;
+
+      const blocos = [];
+      let subitemCount = 0;
+
+      function processarNoBloco(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const txt = node.textContent.trim();
+          if (txt) {
+            subitemCount++;
+            blocos.push(new Paragraph({
+              alignment: AlignmentType.JUSTIFIED,
+              spacing: { after: 120, line: 276 },
+              children: [
+                new TextRun({ text: `${numeroTopico}.${subitemCount}.   `, bold: true, font: "Calibri", size: 22 }),
+                new TextRun({ text: txt, font: "Calibri", size: 22 })
+              ]
+            }));
+          }
+          return;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const tag = node.tagName.toUpperCase();
+
+        if (tag === "TABLE") {
+          const trs = Array.from(node.querySelectorAll("tr"));
+          if (trs.length === 0) return;
+
+          const docxRows = trs.map((tr, rIdx) => {
+            const cells = Array.from(tr.children);
+            const isHeaderRow = tr.parentNode.nodeName === "THEAD" || rIdx === 0 && tr.querySelector("th");
+
+            const docxCells = cells.map(cell => {
+              const isTh = cell.tagName.toUpperCase() === "TH" || isHeaderRow;
+              const cellRuns = extrairTextRuns(cell, { bold: isTh });
+
+              return new TableCell({
+                shading: isTh ? { type: ShadingType.CLEAR, color: "auto", fill: "E2E8F0" } : undefined,
+                margins: { top: 80, bottom: 80, left: 110, right: 110 },
+                borders: {
+                  top: { style: BorderStyle.SINGLE, size: 6, color: "334155" },
+                  bottom: { style: BorderStyle.SINGLE, size: 6, color: "334155" },
+                  left: { style: BorderStyle.SINGLE, size: 6, color: "334155" },
+                  right: { style: BorderStyle.SINGLE, size: 6, color: "334155" }
+                },
+                children: [
+                  new Paragraph({
+                    alignment: isTh ? AlignmentType.CENTER : AlignmentType.LEFT,
+                    children: cellRuns.length ? cellRuns : [new TextRun({ text: "", font: "Calibri", size: 20 })]
+                  })
+                ]
+              });
+            });
+
+            return new TableRow({
+              tableHeader: !!isHeaderRow,
+              children: docxCells
+            });
+          });
+
+          blocos.push(new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: docxRows
+          }));
+
+          blocos.push(new Paragraph({ spacing: { after: 120 }, children: [] }));
+          return;
+        }
+
+        if (tag === "UL" || tag === "OL") {
+          const lis = Array.from(node.querySelectorAll(":scope > li"));
+          lis.forEach((li, idx) => {
+            const prefixo = tag === "OL" ? `${String.fromCharCode(97 + idx)})   ` : "•   ";
+            const runs = extrairTextRuns(li);
+            blocos.push(new Paragraph({
+              alignment: AlignmentType.JUSTIFIED,
+              indent: { left: 420 },
+              spacing: { after: 100, line: 276 },
+              children: [
+                new TextRun({ text: prefixo, bold: tag === "OL", font: "Calibri", size: 22 }),
+                ...runs
+              ]
+            }));
+          });
+          return;
+        }
+
+        if (tag === "P" || tag === "DIV") {
+          // Se contiver sub-blocos (ex: outra div ou tabela), desce recursivamente
+          const hasBlockChild = Array.from(node.children).some(c => ["P", "DIV", "TABLE", "UL", "OL"].includes(c.tagName.toUpperCase()));
+          if (hasBlockChild) {
+            node.childNodes.forEach(processarNoBloco);
+            return;
+          }
+
+          const textoLimpo = node.textContent.trim();
+          if (!textoLimpo) return;
+
+          const runs = extrairTextRuns(node);
+          const jaTemNumeracao = /^\d+(\.\d+)*\.?\s/.test(textoLimpo);
+          const prefixoRuns = [];
+
+          if (!jaTemNumeracao) {
+            subitemCount++;
+            prefixoRuns.push(new TextRun({
+              text: `${numeroTopico}.${subitemCount}.   `,
+              bold: true,
+              font: "Calibri",
+              size: 22
+            }));
+          }
+
+          blocos.push(new Paragraph({
+            alignment: mapearAlinhamento(node),
+            spacing: { after: 130, line: 276 },
+            children: [...prefixoRuns, ...runs]
+          }));
+        }
+      }
+
+      wrapper.childNodes.forEach(processarNoBloco);
+      return blocos;
+    }
+
+    async function carregarImagemBuffer(url) {
+      if (!url) return null;
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        return await resp.arrayBuffer();
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // =========================================================================
+    // GERAÇÃO DO ARQUIVO WORD (.DOCX)
+    // =========================================================================
+    async function gerarDocumentoWord() {
+      const cardsSelecionados = Array.from(document.querySelectorAll(".topic-card"))
+        .filter(c => c.querySelector(".topic-checkbox").checked);
+
+      if (cardsSelecionados.length === 0) {
+        alert("Selecione pelo menos um tópico para gerar o documento Word.");
+        return;
+      }
+
+      mostrarLoader(true, "Gerando arquivo Word (.docx) formatado...");
+
+      try {
+        const {
+          Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          WidthType, BorderStyle, ShadingType, AlignmentType, Header, Footer, ImageRun
+        } = window.docx;
+
+        const org = getOrgaoAtual();
+        const tipoDoc = document.getElementById("selectTipoDoc").value;
+        const tituloPrincipal = TITULOS_DOCUMENTO[tipoDoc] || tipoDoc.toUpperCase();
+
+        // Tenta carregar as logos configuradas na aba Orgaos (se estiverem no GitHub)
+        const [logoEsqBuf, logoDirBuf] = await Promise.all([
+          carregarImagemBuffer(org.url_logo_esquerda),
+          carregarImagemBuffer(org.url_logo_direita)
+        ]);
+
+        // Montagem do Cabeçalho Institucional
+        const headerChildren = [];
+        if (logoEsqBuf || logoDirBuf) {
+          const runsLogos = [];
+          if (logoEsqBuf) {
+            runsLogos.push(new ImageRun({ data: logoEsqBuf, transformation: { width: 120, height: 42 } }));
+            runsLogos.push(new TextRun({ text: "      " }));
+          }
+          if (logoDirBuf) {
+            runsLogos.push(new ImageRun({ data: logoDirBuf, transformation: { width: 155, height: 42 } }));
+          }
+          headerChildren.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 120 },
+            children: runsLogos
+          }));
+        } else {
+          headerChildren.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: (org.nome_sigla || "PREFEITURA MUNICIPAL DE FORTALEZA").toUpperCase(),
+                bold: true,
+                font: "Calibri",
+                size: 20,
+                color: "1F3A52"
+              })
+            ]
+          }));
+        }
+
+        // Montagem do Rodapé Institucional
+        const rodapeTexto = org.endereco_rodape || "";
+        const partesRodape = rodapeTexto.split("|").map(p => p.trim());
+        const footerParagraphs = [
+          new Paragraph({
+            spacing: { before: 80, after: 40 },
+            border: { top: { style: BorderStyle.SINGLE, size: 6, color: "CBD5E1" } },
+            children: [
+              new TextRun({
+                text: org.nome_sigla ? org.nome_sigla.split("-").slice(1).join("-").trim() || org.nome_sigla : "",
+                bold: true,
+                font: "Calibri",
+                size: 18,
+                color: "1E293B"
+              })
+            ]
+          })
+        ];
+
+        partesRodape.forEach(linha => {
+          if (linha) {
+            footerParagraphs.push(new Paragraph({
+              spacing: { after: 20 },
+              children: [new TextRun({ text: linha, font: "Calibri", size: 17, color: "334155" })]
+            }));
+          }
+        });
+
+        // Corpo do Documento
+        const docChildren = [];
+
+        // Título Principal Centralizado (Ex: TERMO DE REFERÊNCIA)
+        docChildren.push(new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 80, after: 240 },
+          children: [
+            new TextRun({
+              text: tituloPrincipal,
+              bold: true,
+              font: "Calibri",
+              size: 26, // 13pt
+              color: "000000"
+            })
+          ]
+        }));
+
+        // Renderiza cada tópico marcado com caixa cinza e borda preta (idêntico ao modelo)
+        cardsSelecionados.forEach((card, idx) => {
+          const numero = idx + 1;
+          const tituloTopico = card.querySelector(".topic-title-input").value.trim().toUpperCase();
+          const editorHtml = card.querySelector(".editor-area").innerHTML;
+
+          // Caixa Cinza de Título da Seção (Tabela de 1 linha e 1 coluna)
+          docChildren.push(new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { type: ShadingType.CLEAR, color: "auto", fill: "D9D9D9" },
+                    margins: { top: 70, bottom: 70, left: 140, right: 140 },
+                    borders: {
+                      top: { style: BorderStyle.SINGLE, size: 8, color: "000000" },
+                      bottom: { style: BorderStyle.SINGLE, size: 8, color: "000000" },
+                      left: { style: BorderStyle.SINGLE, size: 8, color: "000000" },
+                      right: { style: BorderStyle.SINGLE, size: 8, color: "000000" }
+                    },
+                    children: [
+                      new Paragraph({
+                        keepNext: true,
+                        children: [
+                          new TextRun({
+                            text: `${numero}.   ${tituloTopico}`,
+                            bold: true,
+                            font: "Calibri",
+                            size: 22,
+                            color: "000000"
+                          })
+                        ]
+                      })
+                    ]
+                  })
+                ]
+              })
+            ]
+          }));
+
+          // Espaço após caixa do título
+          docChildren.push(new Paragraph({ spacing: { after: 100 }, children: [] }));
+
+          // Conteúdo formatado do tópico
+          const blocosConteudo = converterHtmlParaDocxBlocks(editorHtml, numero);
+          docChildren.push(...blocosConteudo);
+
+          // Espaço antes do próximo tópico
+          docChildren.push(new Paragraph({ spacing: { after: 120 }, children: [] }));
+        });
+
+        // Bloco Final de Data e Assinatura
+        const sigData = document.getElementById("sigData").value.trim();
+        const sigNome = document.getElementById("sigNome").value.trim();
+        const sigCargo = document.getElementById("sigCargo").value.trim();
+        const sigObs = document.getElementById("sigObs").value.trim();
+
+        if (sigData) {
+          docChildren.push(new Paragraph({
+            spacing: { before: 120, after: 360 },
+            children: [new TextRun({ text: sigData, font: "Calibri", size: 22 })]
+          }));
+        }
+
+        if (sigNome || sigCargo) {
+          if (sigNome) {
+            docChildren.push(new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 30 },
+              children: [new TextRun({ text: sigNome, font: "Calibri", size: 22 })]
+            }));
+          }
+          if (sigCargo) {
+            docChildren.push(new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 30 },
+              children: [new TextRun({ text: sigCargo.toUpperCase(), bold: true, font: "Calibri", size: 22 })]
+            }));
+          }
+          if (sigObs) {
+            docChildren.push(new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: sigObs, font: "Calibri", size: 20 })]
+            }));
+          }
+        }
+
+        const doc = new Document({
+          sections: [
+            {
+              properties: {
+                page: {
+                  margin: {
+                    top: 1440,    // 2.54 cm
+                    bottom: 1440,
+                    left: 1440,
+                    right: 1440
+                  }
+                }
+              },
+              headers: {
+                default: new Header({ children: headerChildren })
+              },
+              footers: {
+                default: new Footer({ children: footerParagraphs })
+              },
+              children: docChildren
+            }
+          ]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        const siglaLimpa = (org.id_orgao || "DOC").replace(/[^a-zA-Z0-9_-]/g, "_");
+        const tipoLimpo = tipoDoc.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
+        saveAs(blob, `${tipoLimpo}_${siglaLimpa}.docx`);
+      } catch (err) {
+        console.error("Erro ao gerar Word:", err);
+        alert("Ocorreu um erro ao gerar o arquivo Word: " + err.message);
+      } finally {
+        mostrarLoader(false);
+      }
+    }
+  </script>
+</body>
+</html>
