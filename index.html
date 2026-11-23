@@ -44,7 +44,7 @@
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 80px;
+      padding-bottom: 84px;
     }
 
     /* Barra Superior Fixa */
@@ -83,14 +83,12 @@
       margin: 0;
       font-size: 1.05rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
     }
 
     .brand span {
       display: block;
       font-size: 0.75rem;
       color: #cbd5e1;
-      font-weight: 400;
     }
 
     .controls-bar {
@@ -156,7 +154,7 @@
       padding: 0 16px;
     }
 
-    /* Banner de Status / Info Institucional */
+    /* Banner Institucional */
     .org-banner {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -228,6 +226,16 @@
 
     .btn-success:hover {
       background: #15803d;
+    }
+
+    .btn-danger-outline {
+      background: #fff;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fef2f2;
     }
 
     /* Cartão de Tópico */
@@ -367,6 +375,17 @@
       background: #e2e8f0;
     }
 
+    .tb-btn.subtopico-btn {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .tb-btn.subtopico-btn:hover {
+      background: #dbeafe;
+    }
+
     .tb-sep {
       width: 1px;
       height: 20px;
@@ -399,7 +418,7 @@
     /* Área Editável */
     .editor-area {
       padding: 14px 16px;
-      min-height: 90px;
+      min-height: 110px;
       outline: none;
       font-size: 0.94rem;
       color: #0f172a;
@@ -410,9 +429,15 @@
       margin: 0 0 8px 0;
     }
 
-    .editor-area ul, .editor-area ol {
-      margin: 6px 0 10px 22px;
-      padding: 0;
+    .editor-area p.subtopico-linha {
+      margin: 4px 0 8px 0;
+    }
+
+    .editor-area .sub-num {
+      font-weight: 700;
+      color: #0f172a;
+      margin-right: 4px;
+      user-select: none;
     }
 
     .editor-area table {
@@ -445,8 +470,17 @@
       margin-top: 22px;
     }
 
-    .signature-card h3 {
-      margin: 0 0 12px 0;
+    .signature-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .signature-header h3 {
+      margin: 0;
       font-size: 0.95rem;
       color: var(--primary);
       display: flex;
@@ -454,10 +488,26 @@
       gap: 8px;
     }
 
-    .sig-grid {
+    .date-field-box {
+      max-width: 480px;
+      margin-bottom: 16px;
+    }
+
+    .signers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .signer-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto;
+      gap: 10px;
+      align-items: end;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 12px;
+      border-radius: 6px;
     }
 
     .field-box {
@@ -478,9 +528,10 @@
       border-radius: 6px;
       font-family: inherit;
       font-size: 0.88rem;
+      background: #fff;
     }
 
-    /* Barra Flutuante Inferior de Exportação */
+    /* Barra Flutuante Inferior */
     .bottom-bar {
       position: fixed;
       bottom: 0;
@@ -517,7 +568,7 @@
       position: fixed;
       inset: 0;
       background: rgba(255, 255, 255, 0.88);
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -540,7 +591,7 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Modal simples para inserir tabela */
+    /* Modal Tabela */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -641,27 +692,25 @@
     <!-- Lista de Tópicos Dinâmicos -->
     <div id="topicsContainer"></div>
 
-    <!-- Bloco de Data e Assinatura -->
+    <!-- Bloco de Data e Assinaturas -->
     <section class="signature-card">
-      <h3><i class="fa-solid fa-signature"></i> Fechamento e Assinatura do Documento</h3>
-      <div class="sig-grid">
-        <div class="field-box">
-          <label for="sigData">Texto de Data</label>
-          <input type="text" id="sigData" value="Data, conforme assinatura digital." />
-        </div>
-        <div class="field-box">
-          <label for="sigNome">Nome do Responsável</label>
-          <input type="text" id="sigNome" placeholder="Ex: Domitília Fernandes de Araújo Leite" />
-        </div>
-        <div class="field-box">
-          <label for="sigCargo">Cargo / Setor</label>
-          <input type="text" id="sigCargo" placeholder="Ex: GERENTE DE ENGENHARIA" />
-        </div>
-        <div class="field-box">
-          <label for="sigObs">Observação da Assinatura</label>
-          <input type="text" id="sigObs" value="-Assinatura por Certificado Digital-" />
-        </div>
+      <div class="signature-header">
+        <h3><i class="fa-solid fa-signature"></i> Fechamento e Assinaturas</h3>
+        <button type="button" class="btn btn-primary" onclick="adicionarAssinante()">
+          <i class="fa-solid fa-user-plus"></i> Adicionar Assinante
+        </button>
       </div>
+
+      <div class="field-box date-field-box">
+        <label for="sigData">Local e Data / Assinatura Digital</label>
+        <input
+          type="text"
+          id="sigData"
+          placeholder="Ex: Fortaleza/CE, 23 de novembro de 2026. ou Fortaleza/CE, na data da assinatura digital."
+        />
+      </div>
+
+      <div id="signersContainer" class="signers-list"></div>
     </section>
   </main>
 
@@ -707,7 +756,6 @@
     const CSV_ORGAOS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXr_2j4SjbwSOVR-W5CQWF9tG0FVgoAr35Cgbr1xu9lp5UFg9b7Nyg-bA9fMM9bCkn-B6KdKUbfvjN/pub?gid=0&single=true&output=csv";
     const CSV_TOPICOS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXr_2j4SjbwSOVR-W5CQWF9tG0FVgoAr35Cgbr1xu9lp5UFg9b7Nyg-bA9fMM9bCkn-B6KdKUbfvjN/pub?gid=1162435086&single=true&output=csv";
 
-    // Mapeamento dos títulos completos para o cabeçalho do Word
     const TITULOS_DOCUMENTO = {
       "DFD do PCA": "DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA – DFD (PCA)",
       "DFD do PLS": "DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA – DFD (PLS)",
@@ -722,13 +770,12 @@
     let activeEditorElement = null;
     let savedSelectionRange = null;
 
-    // Inicialização
     document.addEventListener("DOMContentLoaded", () => {
+      adicionarAssinante(); // Inicia com 1 bloco de assinatura em branco
       carregarDadosPlanilha();
 
       document.getElementById("selectOrgao").addEventListener("change", () => {
         atualizarBannerOrgao();
-        atualizarUnidadeRequisitanteNoEditor();
       });
 
       document.getElementById("selectTipoDoc").addEventListener("change", () => {
@@ -800,7 +847,6 @@
       const valorAtual = sel.value;
       const tiposPlanilha = [...new Set(listaTopicos.map(t => t.tipo_documento.trim()))];
 
-      // Garante que as 6 opções solicitadas existam + quaisquer novas cadastradas na planilha
       const opcoesPadrao = ["DFD do PCA", "DFD do PLS", "DFD Geral", "ETP", "TR", "Análise de Riscos"];
       const todasOpcoes = [...new Set([...opcoesPadrao, ...tiposPlanilha])];
 
@@ -826,20 +872,6 @@
       document.getElementById("bannerOrgaoRodape").textContent = org.endereco_rodape || "";
     }
 
-    function atualizarUnidadeRequisitanteNoEditor() {
-      const org = getOrgaoAtual();
-      if (!org.unidade_requisitante_padrao) return;
-
-      const cards = document.querySelectorAll(".topic-card");
-      cards.forEach(card => {
-        const titulo = card.querySelector(".topic-title-input").value.trim().toUpperCase();
-        if (titulo.includes("UNIDADE REQUISITANTE")) {
-          const editor = card.querySelector(".editor-area");
-          editor.innerHTML = `<p>${org.unidade_requisitante_padrao}</p>`;
-        }
-      });
-    }
-
     function renderizarTopicos() {
       const tipoDoc = document.getElementById("selectTipoDoc").value;
       const container = document.getElementById("topicsContainer");
@@ -858,18 +890,10 @@
         return;
       }
 
-      const org = getOrgaoAtual();
-
       filtrados.forEach((item) => {
         const marcado = (item.marcacao_padrao || "SIM").trim().toUpperCase() === "SIM";
-        let conteudo = item.conteudo_padrao || "<p></p>";
-
-        // Substitui automaticamente o texto da Unidade Requisitante conforme o órgão escolhido
-        if (item.titulo_topico.trim().toUpperCase().includes("UNIDADE REQUISITANTE") && org.unidade_requisitante_padrao) {
-          conteudo = `<p>${org.unidade_requisitante_padrao}</p>`;
-        }
-
-        const card = criarCardTopico(item.titulo_topico.trim(), conteudo, marcado);
+        // Campos de texto iniciam sempre em branco
+        const card = criarCardTopico(item.titulo_topico.trim(), "<p><br></p>", marcado);
         container.appendChild(card);
       });
 
@@ -908,17 +932,21 @@
             <input type="color" value="#fef08a" onchange="aplicarCor(this, 'hiliteColor')" />
           </label>
           <div class="tb-sep"></div>
-          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'insertUnorderedList')" title="Lista com marcadores"><i class="fa-solid fa-list-ul"></i></button>
-          <button type="button" class="tb-btn" onmousedown="execCmd(event, 'insertOrderedList')" title="Lista numerada"><i class="fa-solid fa-list-ol"></i></button>
+          <button type="button" class="tb-btn subtopico-btn" onclick="inserirSubtopico(this, 1)" title="Inserir subtópico (ex: 2.1)">
+            <i class="fa-solid fa-indent"></i> + Subtópico
+          </button>
+          <button type="button" class="tb-btn subtopico-btn" onclick="aprofundarSubtopico(this)" title="Subdividir o subtópico atual (ex: 2.1 -> 2.1.1)">
+            <i class="fa-solid fa-level-down-alt"></i> Subdividir (X.Y.Z)
+          </button>
           <div class="tb-sep"></div>
           <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyLeft')" title="Alinhar à esquerda"><i class="fa-solid fa-align-left"></i></button>
           <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyCenter')" title="Centralizar"><i class="fa-solid fa-align-center"></i></button>
           <button type="button" class="tb-btn" onmousedown="execCmd(event, 'justifyFull')" title="Justificar"><i class="fa-solid fa-align-justify"></i></button>
           <div class="tb-sep"></div>
           <button type="button" class="tb-btn" onclick="abrirModalTabela(this)" title="Inserir Tabela"><i class="fa-solid fa-table"></i> + Tabela</button>
-          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addRow')" title="Adicionar linha na tabela selecionada"><i class="fa-solid fa-plus"></i> Linha</button>
-          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addCol')" title="Adicionar coluna na tabela selecionada"><i class="fa-solid fa-plus"></i> Coluna</button>
-          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'delRow')" title="Remover linha atual da tabela"><i class="fa-solid fa-minus"></i> Linha</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addRow')" title="Adicionar linha na tabela"><i class="fa-solid fa-plus"></i> Linha</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'addCol')" title="Adicionar coluna na tabela"><i class="fa-solid fa-plus"></i> Coluna</button>
+          <button type="button" class="tb-btn" onclick="manipularTabela(this, 'delRow')" title="Remover linha da tabela"><i class="fa-solid fa-minus"></i> Linha</button>
         </div>
 
         <div class="editor-area" contenteditable="true">${conteudoHtml}</div>
@@ -934,7 +962,13 @@
       editor.addEventListener("focus", () => {
         activeEditorElement = editor;
       });
-      editor.addEventListener("keyup", salvarSelecao);
+      editor.addEventListener("keyup", (e) => {
+        salvarSelecao();
+        // Permite digitar "2.1 " ou "2.1.1 " no início de uma linha e converter automaticamente em subtópico oficial
+        if (e.key === " " || e.code === "Space") {
+          verificarAtalhoNumeracaoManual(editor, card);
+        }
+      });
       editor.addEventListener("mouseup", salvarSelecao);
 
       return card;
@@ -942,6 +976,169 @@
 
     function escapeHtmlAttr(str) {
       return String(str).replace(/"/g, "&quot;");
+    }
+
+    // =========================================================================
+    // SUBTÓPICOS HIERÁRQUICOS DINÂMICOS (2.1, 2.1.1, 2.1.1.1...)
+    // =========================================================================
+    function getNumeroTopicoDoCard(card) {
+      const badgeText = card.querySelector(".topic-number-badge").textContent.trim();
+      const num = parseInt(badgeText, 10);
+      return isNaN(num) ? null : num;
+    }
+
+    function recalcularSubtopicosDoCard(card) {
+      const topNum = getNumeroTopicoDoCard(card);
+      const editor = card.querySelector(".editor-area");
+      const subParas = Array.from(editor.querySelectorAll("p.subtopico-linha"));
+
+      if (!topNum) {
+        subParas.forEach(p => {
+          const span = p.querySelector(".sub-num");
+          if (span) span.textContent = "";
+        });
+        return;
+      }
+
+      // Pilha de contadores por nível de profundidade (nível 1 => 2.1, nível 2 => 2.1.1, nível 3 => 2.1.1.1)
+      const counters = [];
+
+      subParas.forEach(p => {
+        const nivel = Math.max(1, parseInt(p.getAttribute("data-nivel") || "1", 10));
+        counters.length = nivel;
+        for (let i = 0; i < nivel; i++) {
+          if (!counters[i]) counters[i] = 0;
+        }
+        counters[nivel - 1] += 1;
+
+        const codigo = `${topNum}.${counters.slice(0, nivel).join(".")}.`;
+        p.style.paddingLeft = `${(nivel - 1) * 18}px`;
+
+        let span = p.querySelector(".sub-num");
+        if (!span) {
+          span = document.createElement("span");
+          span.className = "sub-num";
+          span.contentEditable = "false";
+          p.insertBefore(span, p.firstChild);
+        }
+        span.textContent = `${codigo} `;
+      });
+    }
+
+    function criarParagrafoSubtopico(codigoTexto, nivel) {
+      const p = document.createElement("p");
+      p.className = "subtopico-linha";
+      p.setAttribute("data-nivel", String(nivel));
+      p.style.paddingLeft = `${(nivel - 1) * 18}px`;
+
+      const span = document.createElement("span");
+      span.className = "sub-num";
+      span.contentEditable = "false";
+      span.textContent = `${codigoTexto} `;
+
+      const textoSpan = document.createElement("span");
+      textoSpan.innerHTML = "&#8203;";
+
+      p.appendChild(span);
+      p.appendChild(textoSpan);
+      return p;
+    }
+
+    function inserirSubtopico(btn, nivelDesejado = 1) {
+      const card = btn.closest(".topic-card");
+      const topNum = getNumeroTopicoDoCard(card);
+      if (!topNum) {
+        alert("Marque o tópico para que ele tenha numeração antes de adicionar subtópicos.");
+        return;
+      }
+
+      const editor = card.querySelector(".editor-area");
+      editor.focus();
+
+      const novoP = criarParagrafoSubtopico(`${topNum}.1`, nivelDesejado);
+      const sel = window.getSelection();
+      let alvo = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).startContainer : null;
+      while (alvo && alvo.parentNode !== editor && alvo !== editor) {
+        alvo = alvo.parentNode;
+      }
+
+      if (alvo && alvo.parentNode === editor) {
+        editor.insertBefore(novoP, alvo.nextSibling);
+      } else {
+        editor.appendChild(novoP);
+      }
+
+      recalcularSubtopicosDoCard(card);
+
+      // Posiciona cursor após o número do subtópico
+      const range = document.createRange();
+      const lastChild = novoP.lastChild;
+      range.setStart(lastChild, lastChild.nodeType === Node.TEXT_NODE ? lastChild.length : 0);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    function aprofundarSubtopico(btn) {
+      const card = btn.closest(".topic-card");
+      const topNum = getNumeroTopicoDoCard(card);
+      if (!topNum) return;
+
+      const editor = card.querySelector(".editor-area");
+      const sel = window.getSelection();
+      let pAtual = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).startContainer : null;
+      while (pAtual && pAtual !== editor && !(pAtual.nodeName === "P" && pAtual.classList.contains("subtopico-linha"))) {
+        pAtual = pAtual.parentNode;
+      }
+
+      if (pAtual && pAtual.classList && pAtual.classList.contains("subtopico-linha")) {
+        const nivelAtual = parseInt(pAtual.getAttribute("data-nivel") || "1", 10);
+        const novoNivel = nivelAtual + 1;
+        const novoP = criarParagrafoSubtopico(`${topNum}.1.1`, novoNivel);
+        editor.insertBefore(novoP, pAtual.nextSibling);
+        recalcularSubtopicosDoCard(card);
+
+        const range = document.createRange();
+        const lastChild = novoP.lastChild;
+        range.setStart(lastChild, lastChild.nodeType === Node.TEXT_NODE ? lastChild.length : 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        inserirSubtopico(btn, 1);
+      }
+    }
+
+    function verificarAtalhoNumeracaoManual(editor, card) {
+      const topNum = getNumeroTopicoDoCard(card);
+      if (!topNum) return;
+
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+
+      let node = sel.getRangeAt(0).startContainer;
+      while (node && node !== editor && node.nodeName !== "P") {
+        node = node.parentNode;
+      }
+      if (!node || node === editor || node.classList.contains("subtopico-linha")) return;
+
+      const texto = node.textContent.trim();
+      // Detecta padrões como "2.1" ou "2.1.1" ou "2.1.1.1"
+      const match = texto.match(/^(\d+(?:\.\d+)+)\.?$/);
+      if (match) {
+        const partes = match[1].split(".");
+        const nivel = Math.max(1, partes.length - 1);
+        node.textContent = "";
+        node.className = "subtopico-linha";
+        node.setAttribute("data-nivel", String(nivel));
+        recalcularSubtopicosDoCard(card);
+
+        const range = document.createRange();
+        range.setStart(node, node.childNodes.length);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     }
 
     function atualizarNumeracaoEContador() {
@@ -957,6 +1154,7 @@
         } else {
           badge.textContent = "—";
         }
+        recalcularSubtopicosDoCard(card);
       });
 
       document.getElementById("summaryCounter").innerHTML =
@@ -974,7 +1172,7 @@
 
     function adicionarTopicoPersonalizado() {
       const container = document.getElementById("topicsContainer");
-      const card = criarCardTopico("NOVO TÓPICO PERSONALIZADO", "<p>Digite aqui o conteúdo deste tópico...</p>", true);
+      const card = criarCardTopico("NOVO TÓPICO", "<p><br></p>", true);
       container.appendChild(card);
       atualizarNumeracaoEContador();
       card.querySelector(".topic-title-input").focus();
@@ -996,6 +1194,42 @@
       const card = btn.closest(".topic-card");
       card.remove();
       atualizarNumeracaoEContador();
+    }
+
+    // =========================================================================
+    // MÚLTIPLOS ASSINANTES
+    // =========================================================================
+    function adicionarAssinante() {
+      const container = document.getElementById("signersContainer");
+      const row = document.createElement("div");
+      row.className = "signer-row";
+      row.innerHTML = `
+        <div class="field-box">
+          <label>Nome do Assinante</label>
+          <input type="text" class="signer-nome" placeholder="Nome completo" />
+        </div>
+        <div class="field-box">
+          <label>Cargo / Função / Setor</label>
+          <input type="text" class="signer-cargo" placeholder="Ex: Gerente / Fiscal / Ordenador de Despesa" />
+        </div>
+        <div class="field-box">
+          <label>Observação / Tipo de Assinatura</label>
+          <input type="text" class="signer-obs" placeholder="Ex: -Assinatura por Certificado Digital-" />
+        </div>
+        <button type="button" class="btn btn-danger-outline" onclick="removerAssinante(this)" title="Remover assinante">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      `;
+      container.appendChild(row);
+    }
+
+    function removerAssinante(btn) {
+      const container = document.getElementById("signersContainer");
+      if (container.children.length > 1) {
+        btn.closest(".signer-row").remove();
+      } else {
+        btn.closest(".signer-row").querySelectorAll("input").forEach(inp => inp.value = "");
+      }
     }
 
     // =========================================================================
@@ -1110,7 +1344,7 @@
     }
 
     // =========================================================================
-    // CONVERSÃO DE HTML DO EDITOR PARA ELEMENTOS NATIVOS DO DOCX.JS
+    // CONVERSÃO DE HTML PARA DOCX.JS
     // =========================================================================
     function rgbToHex(colorStr) {
       if (!colorStr) return undefined;
@@ -1134,12 +1368,12 @@
       let runs = [];
 
       if (node.nodeType === Node.TEXT_NODE) {
-        const texto = node.textContent;
+        const texto = node.textContent.replace(/\u200B/g, "");
         if (texto) {
           runs.push(new TextRun({
             text: texto,
             font: "Calibri",
-            size: 22, // 11pt
+            size: 22,
             bold: !!estiloAtual.bold,
             italics: !!estiloAtual.italic,
             underline: estiloAtual.underline ? {} : undefined,
@@ -1151,6 +1385,10 @@
       }
 
       if (node.nodeType !== Node.ELEMENT_NODE) return runs;
+
+      if (node.classList && node.classList.contains("sub-num")) {
+        return runs; // O código do subtópico é tratado estruturalmente no parágrafo
+      }
 
       const tag = node.tagName.toUpperCase();
       if (tag === "BR") {
@@ -1198,20 +1436,16 @@
       wrapper.innerHTML = htmlString;
 
       const blocos = [];
-      let subitemCount = 0;
+      const counters = [];
 
       function processarNoBloco(node) {
         if (node.nodeType === Node.TEXT_NODE) {
-          const txt = node.textContent.trim();
+          const txt = node.textContent.replace(/\u200B/g, "").trim();
           if (txt) {
-            subitemCount++;
             blocos.push(new Paragraph({
               alignment: AlignmentType.JUSTIFIED,
               spacing: { after: 120, line: 276 },
-              children: [
-                new TextRun({ text: `${numeroTopico}.${subitemCount}.   `, bold: true, font: "Calibri", size: 22 }),
-                new TextRun({ text: txt, font: "Calibri", size: 22 })
-              ]
+              children: [new TextRun({ text: txt, font: "Calibri", size: 22 })]
             }));
           }
           return;
@@ -1226,7 +1460,7 @@
 
           const docxRows = trs.map((tr, rIdx) => {
             const cells = Array.from(tr.children);
-            const isHeaderRow = tr.parentNode.nodeName === "THEAD" || rIdx === 0 && tr.querySelector("th");
+            const isHeaderRow = tr.parentNode.nodeName === "THEAD" || (rIdx === 0 && tr.querySelector("th"));
 
             const docxCells = cells.map(cell => {
               const isTh = cell.tagName.toUpperCase() === "TH" || isHeaderRow;
@@ -1265,54 +1499,44 @@
           return;
         }
 
-        if (tag === "UL" || tag === "OL") {
-          const lis = Array.from(node.querySelectorAll(":scope > li"));
-          lis.forEach((li, idx) => {
-            const prefixo = tag === "OL" ? `${String.fromCharCode(97 + idx)})   ` : "•   ";
-            const runs = extrairTextRuns(li);
-            blocos.push(new Paragraph({
-              alignment: AlignmentType.JUSTIFIED,
-              indent: { left: 420 },
-              spacing: { after: 100, line: 276 },
-              children: [
-                new TextRun({ text: prefixo, bold: tag === "OL", font: "Calibri", size: 22 }),
-                ...runs
-              ]
-            }));
-          });
-          return;
-        }
-
         if (tag === "P" || tag === "DIV") {
-          // Se contiver sub-blocos (ex: outra div ou tabela), desce recursivamente
-          const hasBlockChild = Array.from(node.children).some(c => ["P", "DIV", "TABLE", "UL", "OL"].includes(c.tagName.toUpperCase()));
+          const hasBlockChild = Array.from(node.children).some(c => ["P", "DIV", "TABLE"].includes(c.tagName.toUpperCase()));
           if (hasBlockChild) {
             node.childNodes.forEach(processarNoBloco);
             return;
           }
 
-          const textoLimpo = node.textContent.trim();
-          if (!textoLimpo) return;
-
           const runs = extrairTextRuns(node);
-          const jaTemNumeracao = /^\d+(\.\d+)*\.?\s/.test(textoLimpo);
-          const prefixoRuns = [];
+          const textoConteudo = runs.map(r => r.root ? r.root.find(x => x._attrs && x._attrs.text)?. _attrs.text || "" : "").join("").trim();
+          const isSubtopico = node.classList && node.classList.contains("subtopico-linha");
 
-          if (!jaTemNumeracao) {
-            subitemCount++;
-            prefixoRuns.push(new TextRun({
-              text: `${numeroTopico}.${subitemCount}.   `,
-              bold: true,
-              font: "Calibri",
-              size: 22
+          if (!textoConteudo && !isSubtopico) return;
+
+          if (isSubtopico) {
+            const nivel = Math.max(1, parseInt(node.getAttribute("data-nivel") || "1", 10));
+            counters.length = nivel;
+            for (let i = 0; i < nivel; i++) {
+              if (!counters[i]) counters[i] = 0;
+            }
+            counters[nivel - 1] += 1;
+            const codigo = `${numeroTopico}.${counters.slice(0, nivel).join(".")}.   `;
+
+            blocos.push(new Paragraph({
+              alignment: mapearAlinhamento(node),
+              indent: { left: (nivel - 1) * 320 },
+              spacing: { after: 120, line: 276 },
+              children: [
+                new TextRun({ text: codigo, bold: true, font: "Calibri", size: 22 }),
+                ...runs
+              ]
+            }));
+          } else {
+            blocos.push(new Paragraph({
+              alignment: mapearAlinhamento(node),
+              spacing: { after: 120, line: 276 },
+              children: runs
             }));
           }
-
-          blocos.push(new Paragraph({
-            alignment: mapearAlinhamento(node),
-            spacing: { after: 130, line: 276 },
-            children: [...prefixoRuns, ...runs]
-          }));
         }
       }
 
@@ -1355,13 +1579,11 @@
         const tipoDoc = document.getElementById("selectTipoDoc").value;
         const tituloPrincipal = TITULOS_DOCUMENTO[tipoDoc] || tipoDoc.toUpperCase();
 
-        // Tenta carregar as logos configuradas na aba Orgaos (se estiverem no GitHub)
         const [logoEsqBuf, logoDirBuf] = await Promise.all([
           carregarImagemBuffer(org.url_logo_esquerda),
           carregarImagemBuffer(org.url_logo_direita)
         ]);
 
-        // Montagem do Cabeçalho Institucional
         const headerChildren = [];
         if (logoEsqBuf || logoDirBuf) {
           const runsLogos = [];
@@ -1393,7 +1615,6 @@
           }));
         }
 
-        // Montagem do Rodapé Institucional
         const rodapeTexto = org.endereco_rodape || "";
         const partesRodape = rodapeTexto.split("|").map(p => p.trim());
         const footerParagraphs = [
@@ -1421,10 +1642,8 @@
           }
         });
 
-        // Corpo do Documento
         const docChildren = [];
 
-        // Título Principal Centralizado (Ex: TERMO DE REFERÊNCIA)
         docChildren.push(new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { before: 80, after: 240 },
@@ -1433,19 +1652,17 @@
               text: tituloPrincipal,
               bold: true,
               font: "Calibri",
-              size: 26, // 13pt
+              size: 26,
               color: "000000"
             })
           ]
         }));
 
-        // Renderiza cada tópico marcado com caixa cinza e borda preta (idêntico ao modelo)
         cardsSelecionados.forEach((card, idx) => {
           const numero = idx + 1;
           const tituloTopico = card.querySelector(".topic-title-input").value.trim().toUpperCase();
           const editorHtml = card.querySelector(".editor-area").innerHTML;
 
-          // Caixa Cinza de Título da Seção (Tabela de 1 linha e 1 coluna)
           docChildren.push(new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
@@ -1480,52 +1697,55 @@
             ]
           }));
 
-          // Espaço após caixa do título
           docChildren.push(new Paragraph({ spacing: { after: 100 }, children: [] }));
 
-          // Conteúdo formatado do tópico
           const blocosConteudo = converterHtmlParaDocxBlocks(editorHtml, numero);
           docChildren.push(...blocosConteudo);
 
-          // Espaço antes do próximo tópico
           docChildren.push(new Paragraph({ spacing: { after: 120 }, children: [] }));
         });
 
-        // Bloco Final de Data e Assinatura
+        // Data livre e Múltiplos Assinantes
         const sigData = document.getElementById("sigData").value.trim();
-        const sigNome = document.getElementById("sigNome").value.trim();
-        const sigCargo = document.getElementById("sigCargo").value.trim();
-        const sigObs = document.getElementById("sigObs").value.trim();
-
         if (sigData) {
           docChildren.push(new Paragraph({
-            spacing: { before: 120, after: 360 },
+            spacing: { before: 140, after: 320 },
             children: [new TextRun({ text: sigData, font: "Calibri", size: 22 })]
           }));
         }
 
-        if (sigNome || sigCargo) {
-          if (sigNome) {
-            docChildren.push(new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 30 },
-              children: [new TextRun({ text: sigNome, font: "Calibri", size: 22 })]
-            }));
+        const signerRows = Array.from(document.querySelectorAll(".signer-row"));
+        signerRows.forEach(row => {
+          const nome = row.querySelector(".signer-nome").value.trim();
+          const cargo = row.querySelector(".signer-cargo").value.trim();
+          const obs = row.querySelector(".signer-obs").value.trim();
+
+          if (nome || cargo || obs) {
+            if (nome) {
+              docChildren.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 120, after: 25 },
+                children: [new TextRun({ text: nome, font: "Calibri", size: 22 })]
+              }));
+            }
+            if (cargo) {
+              docChildren.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 25 },
+                children: [new TextRun({ text: cargo.toUpperCase(), bold: true, font: "Calibri", size: 22 })]
+              }));
+            }
+            if (obs) {
+              docChildren.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 220 },
+                children: [new TextRun({ text: obs, font: "Calibri", size: 20 })]
+              }));
+            } else {
+              docChildren.push(new Paragraph({ spacing: { after: 220 }, children: [] }));
+            }
           }
-          if (sigCargo) {
-            docChildren.push(new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 30 },
-              children: [new TextRun({ text: sigCargo.toUpperCase(), bold: true, font: "Calibri", size: 22 })]
-            }));
-          }
-          if (sigObs) {
-            docChildren.push(new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [new TextRun({ text: sigObs, font: "Calibri", size: 20 })]
-            }));
-          }
-        }
+        });
 
         const doc = new Document({
           sections: [
@@ -1533,7 +1753,7 @@
               properties: {
                 page: {
                   margin: {
-                    top: 1440,    // 2.54 cm
+                    top: 1440,
                     bottom: 1440,
                     left: 1440,
                     right: 1440
